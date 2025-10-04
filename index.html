@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Count To 1 Million</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #317334;
+        }
+        #displayVariable {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="incrementButton">Click Me</button>
+    <p id="displayVariable">Current Value: 0</p>
+
+    <audio id="clickSound" src="computer-mouse-click-351398.mp3" preload="auto"></audio>
+
+    <script>
+        let counter = 0; // Initialize the variable
+        const incrementButton = document.getElementById('incrementButton');
+        const displayVariable = document.getElementById('displayVariable');
+        const clickSound = document.getElementById('clickSound');
+
+        incrementButton.addEventListener('click', () => {
+            counter++; // Increment the variable
+            displayVariable.textContent = `Current Value: ${counter}`; // Update the display
+            clickSound.currentTime = 0; // Reset sound to start if played recently
+            clickSound.play(); // Play the clicking sound
+        });
+    </script>
+   </head>
+<body>
+
+
+</body>
+</html>
+
+
