@@ -1,65 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Count To 1 Million</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        button {
-            padding: 15px 30px;
-            font-size: 20px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-        button:hover {
-            background-color: #317334;
-        }
-        #displayVariable {
-            margin-top: 20px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Count To 1 Million</title>
+<style>
+    body {
+        font-family: sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+    }
+
+    button {
+        padding: 15px 30px;
+        font-size: 20px;
+        cursor: pointer;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #317334;
+    }
+
+    #displayVariable {
+        margin-top: 20px;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    /* Message box in top-left corner */
+    #messageBox {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background-color: #ffffff; /* white fill */
+        color: #333333; /* dark gray text */
+        font-weight: bold; /* bold text */
+        border: 3px solid #333333; /* bolder dark gray outline */
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 16px;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        z-index: 2000;
+        pointer-events: auto; /* now clickable */
+        min-width: 180px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    /* Side menu styles */
+    #sideMenu {
+        position: fixed;
+        top: 0;
+        right: -250px; 
+        width: 250px;
+        height: 100%;
+        background: #555;
+        color: white;
+        padding: 20px;
+        box-sizing: border-box;
+        transition: right 0.3s ease;
+        z-index: 1000;
+    }
+
+    #menuBtn {
+        position: fixed;
+        top: 50%;
+        right: 0; 
+        transform: translateY(-50%) rotate(-90deg);
+        transform-origin: center;
+        background: gray;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        z-index: 1100; 
+        transition: right 0.3s ease; 
+    }
+
+    .cost {
+        font-size: 12px;   
+        color: yellow;     
+        margin: 1px 0;     
+    }
+
+    #sideMenu button {
+        background: gray;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        cursor: pointer;
+        font-size: 14px;
+        border-radius: 3px;
+        transition: transform 0.1s, background 0.1s; 
+    }
+
+    #sideMenu button:hover {
+        background: #777;
+    }
+
+    #sideMenu button:active {
+        transform: scale(0.9);   
+        background: #666;         
+    }
+
+    /* Smaller font for quantity display */
+    #itemQuantity {
+        font-size: 12px;
+        display: block; 
+        margin-top: 4px;
+        color: #FFD700; 
+    }
+</style>
 </head>
 <body>
 
-    <button id="incrementButton">Click Me</button>
-    <p id="displayVariable">Current Value: 0</p>
+<!-- Main Click Button -->
+<button id="incrementButton">Click Me</button>
+<p id="displayVariable">Current Value: 0</p>
 
-    <audio id="clickSound" src="computer-mouse-click-351398.mp3" preload="auto"></audio>
+<audio id="clickSound" src="computer-mouse-click-351398.mp3" preload="auto"></audio>
 
-    <script>
-        let counter = 0; // Initialize the variable
-        const incrementButton = document.getElementById('incrementButton');
-        const displayVariable = document.getElementById('displayVariable');
-        const clickSound = document.getElementById('clickSound');
+<!-- Message box in top-left corner -->
+<div id="messageBox"></div>
 
-        incrementButton.addEventListener('click', () => {
-            counter++; // Increment the variable
-            displayVariable.textContent = `Current Value: ${counter}`; // Update the display
-            clickSound.currentTime = 0; // Reset sound to start if played recently
-            clickSound.play(); // Play the clicking sound
-        });
-    </script>
-   </head>
-<body>
+<!-- Vertical tab button -->
+<button id="menuBtn" onclick="toggleMenu()">Shop</button>
 
+<!-- Slide-out menu -->
+<div id="sideMenu">
+    <h2>Shop</h2>
+    <p>+1 click per second</p>
+    <span id="itemQuantity">Purchased: 0</span>
+    <p class="cost">Cost: 10 clicks</p>
+    <button onclick="buyItem(this)" data-cost="10">Buy</button>
+</div>
+
+<script>
+    let counter = 0;
+    let autoClickRate = 0; 
+    let autoIncrementInterval = null;
+    let itemQuantity = 0; 
+    const displayVariable = document.getElementById('displayVariable');
+    const incrementButton = document.getElementById('incrementButton');
+    const clickSound = document.getElementById('clickSound');
+    const itemQuantityDisplay = document.getElementById('itemQuantity');
+    const messageBox = document.getElementById('messageBox');
+    let messageTimeout;
+
+    incrementButton.addEventListener('click', () => {
+        counter++;
+        displayVariable.textContent = `Current Value: ${counter}`;
+        clickSound.currentTime = 0;
+        clickSound.play();
+    });
+
+    // Menu toggle
+    let menuOpen = false;
+    function toggleMenu() {
+        const menu = document.getElementById("sideMenu");
+        const btn = document.getElementById("menuBtn");
+        if (!menuOpen) {
+            menu.style.right = "0";
+            btn.style.right = "235px";
+            menuOpen = true;
+        } else {
+            menu.style.right = "-235px";
+            btn.style.right = "0";
+            menuOpen = false;
+        }
+    }
+
+    // Show message with fade
+    function showMessage(text) {
+        if (messageTimeout) clearTimeout(messageTimeout); // reset timeout if previous message active
+        messageBox.textContent = text;
+        messageBox.style.opacity = 1;
+
+        // Automatic fade after 2 seconds
+        messageTimeout = setTimeout(() => {
+            messageBox.style.opacity = 0;
+        }, 2000);
+    }
+
+    // Fade out when clicked
+    messageBox.addEventListener('click', () => {
+        messageBox.style.opacity = 0;
+        if (messageTimeout) clearTimeout(messageTimeout);
+    });
+
+    // Buy button logic
+    function buyItem(button) {
+        const cost = parseInt(button.getAttribute('data-cost'), 10);
+
+        if (counter >= cost) {
+            counter -= cost;
+            displayVariable.textContent = `Current Value: ${counter}`;
+
+            autoClickRate++;
+            itemQuantity++;
+            itemQuantityDisplay.textContent = `Purchased: ${itemQuantity}`;
+
+            showMessage("You bought the item!");
+
+            if (!autoIncrementInterval) {
+                autoIncrementInterval = setInterval(() => {
+                    counter += autoClickRate;
+                    displayVariable.textContent = `Current Value: ${counter}`;
+                }, 1000);
+            }
+        } else {
+            showMessage("Not enough clicks!");
+        }
+    }
+</script>
 
 </body>
 </html>
-
-
